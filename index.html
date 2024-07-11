@@ -96,6 +96,20 @@
             background-color: #0056b3;
         }
 
+        #voice-button {
+            border: none;
+            padding: 10px;
+            background-color: #0084ff;
+            color: white;
+            cursor: pointer;
+            border-radius: 20px;
+            margin-left: 10px;
+        }
+
+        #voice-button:hover {
+            background-color: #0056b3;
+        }
+
         @media (max-width: 600px) {
             #chat-container {
                 width: 100%;
@@ -107,7 +121,7 @@
                 padding: 10px 5px;
             }
 
-            #send-button {
+            #send-button, #voice-button {
                 padding: 10px;
             }
         }
@@ -119,6 +133,7 @@
         <div id="input-container">
             <input type="text" id="user-input" placeholder="Type your message here...">
             <button id="send-button">Send</button>
+            <button id="voice-button">🎤</button>
         </div>
     </div>
     <script>
@@ -126,6 +141,8 @@
         document.getElementById('user-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') sendMessage();
         });
+
+        document.getElementById('voice-button').addEventListener('click', startVoiceRecognition);
 
         async function sendMessage() {
             const userInput = document.getElementById('user-input').value;
@@ -139,7 +156,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer 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`
+                        'Authorization': `Bearer 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`
                     },
                     body: JSON.stringify({
                         model: "text-davinci-003",
@@ -155,6 +172,7 @@
                 const data = await response.json();
                 const botReply = data.choices[0].text.trim();
                 appendMessage('bot', botReply);
+                speak(botReply);
             } catch (error) {
                 console.error('Error:', error);
                 appendMessage('bot', 'Sorry, something went wrong.');
@@ -173,6 +191,28 @@
             messageElement.appendChild(messageContent);
             chatBox.appendChild(messageElement);
             chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function startVoiceRecognition() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('user-input').value = transcript;
+                sendMessage();
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Voice recognition error', event);
+            };
+
+            recognition.start();
+        }
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
         }
     </script>
 </body>
