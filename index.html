@@ -71,6 +71,7 @@
             display: flex;
             border-top: 1px solid #ccc;
             padding: 10px;
+            align-items: center;
         }
 
         #user-input {
@@ -110,6 +111,14 @@
             background-color: #0056b3;
         }
 
+        #language-select {
+            margin-left: 10px;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            background-color: #f0f2f5;
+        }
+
         @media (max-width: 600px) {
             #chat-container {
                 width: 100%;
@@ -124,6 +133,10 @@
             #send-button, #voice-button {
                 padding: 10px;
             }
+
+            #language-select {
+                padding: 5px;
+            }
         }
     </style>
 </head>
@@ -134,6 +147,15 @@
             <input type="text" id="user-input" placeholder="Type your message here...">
             <button id="send-button">Send</button>
             <button id="voice-button">🎤</button>
+            <select id="language-select">
+                <option value="en" selected>English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="it">Italian</option>
+                <option value="vi">Vietnamese</option>
+                <!-- Add more languages as needed -->
+            </select>
         </div>
     </div>
     <script>
@@ -146,6 +168,7 @@
 
         async function sendMessage() {
             const userInput = document.getElementById('user-input').value;
+            const language = document.getElementById('language-select').value;
             if (userInput.trim() === '') return;
 
             appendMessage('user', userInput);
@@ -156,17 +179,18 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer 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`
+                        'Authorization': `Bearer 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`
                     },
                     body: JSON.stringify({
                         model: "text-davinci-003",
-                        prompt: userInput,
+                        prompt: `Translate the following text to ${language}: ${userInput}`,
                         max_tokens: 60
                     })
                 });
 
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    const errorText = await response.text();
+                    throw new Error(`Network response was not ok: ${response.statusText} - ${errorText}`);
                 }
 
                 const data = await response.json();
@@ -175,7 +199,7 @@
                 speak(botReply);
             } catch (error) {
                 console.error('Error:', error);
-                appendMessage('bot', 'Sorry, something went wrong.');
+                appendMessage('bot', `Sorry, something went wrong: ${error.message}`);
             }
         }
 
