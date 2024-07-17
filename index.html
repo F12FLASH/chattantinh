@@ -1,243 +1,136 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flirty Chat</title>
+    <title>Chat Tán Tỉnh</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
         }
 
-        #chat-container {
-            width: 90%;
-            max-width: 600px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        .chat-container {
+            width: 400px;
             border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            background-color: white;
             display: flex;
             flex-direction: column;
-            height: 80vh;
         }
 
-        #chat-box {
+        .chat-header {
+            padding: 10px;
+            background-color: #0078ff;
+            color: white;
+            text-align: center;
+        }
+
+        .chat-box {
             flex-grow: 1;
-            padding: 20px;
+            padding: 10px;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
+            border-bottom: 1px solid #ddd;
         }
 
-        .message {
-            display: flex;
+        .chat-box .message {
             margin-bottom: 10px;
-        }
-
-        .message.user {
-            justify-content: flex-end;
-        }
-
-        .message.bot {
-            justify-content: flex-start;
-        }
-
-        .message-content {
-            max-width: 70%;
             padding: 10px;
-            border-radius: 20px;
-            line-height: 1.4;
+            border-radius: 5px;
         }
 
-        .message.user .message-content {
-            background-color: #0084ff;
-            color: white;
-            border-bottom-right-radius: 0;
+        .chat-box .user-message {
+            background-color: #e1ffc7;
+            text-align: right;
         }
 
-        .message.bot .message-content {
-            background-color: #e4e6eb;
-            color: black;
-            border-bottom-left-radius: 0;
+        .chat-box .bot-message {
+            background-color: #f1f0f0;
         }
 
-        #input-container {
+        .chat-input {
             display: flex;
-            border-top: 1px solid #ccc;
-            padding: 10px;
-            align-items: center;
+            border-top: 1px solid #ddd;
         }
 
-        #user-input {
-            border: none;
-            padding: 10px;
+        .chat-input input {
             flex-grow: 1;
-            border-radius: 20px;
-            margin-right: 10px;
+            padding: 10px;
+            border: none;
             outline: none;
-            background-color: #f0f2f5;
         }
 
-        #send-button {
+        .chat-input button {
+            padding: 10px;
             border: none;
-            padding: 10px 20px;
-            background-color: #0084ff;
+            background-color: #0078ff;
             color: white;
             cursor: pointer;
-            border-radius: 20px;
         }
 
-        #send-button:hover {
-            background-color: #0056b3;
-        }
-
-        #voice-button {
-            border: none;
-            padding: 10px;
-            background-color: #0084ff;
-            color: white;
-            cursor: pointer;
-            border-radius: 20px;
-            margin-left: 10px;
-        }
-
-        #voice-button:hover {
-            background-color: #0056b3;
-        }
-
-        #language-select {
-            margin-left: 10px;
-            padding: 10px;
-            border-radius: 20px;
-            border: 1px solid #ccc;
-            background-color: #f0f2f5;
-        }
-
-        @media (max-width: 600px) {
-            #chat-container {
-                width: 100%;
-                height: 100vh;
-                border-radius: 0;
-            }
-
-            #input-container {
-                padding: 10px 5px;
-            }
-
-            #send-button, #voice-button {
-                padding: 10px;
-            }
-
-            #language-select {
-                padding: 5px;
-            }
+        .chat-input button:hover {
+            background-color: #005bb5;
         }
     </style>
 </head>
 <body>
-    <div id="chat-container">
-        <div id="chat-box"></div>
-        <div id="input-container">
-            <input type="text" id="user-input" placeholder="Type your message here...">
-            <button id="send-button">Send</button>
-            <button id="voice-button">🎤</button>
-            <select id="language-select">
-                <option value="en" selected>English</option>
-                <option value="es">Spanish</option>
-                <option value="fr">French</option>
-                <option value="de">German</option>
-                <option value="it">Italian</option>
-                <option value="vi">Vietnamese</option>
-                <!-- Add more languages as needed -->
-            </select>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Chat với nàng</h1>
+        </div>
+        <div class="chat-box" id="chat-box">
+            <!-- Tin nhắn sẽ được thêm vào đây -->
+        </div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Nhập tin nhắn của bạn...">
+            <button onclick="sendMessage()">Gửi</button>
         </div>
     </div>
     <script>
-        document.getElementById('send-button').addEventListener('click', sendMessage);
-        document.getElementById('user-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') sendMessage();
-        });
-
-        document.getElementById('voice-button').addEventListener('click', startVoiceRecognition);
-
         async function sendMessage() {
-            const userInput = document.getElementById('user-input').value;
-            const language = document.getElementById('language-select').value;
-            if (userInput.trim() === '') return;
-
-            appendMessage('user', userInput);
-            document.getElementById('user-input').value = '';
-
-            try {
-                const response = await fetch('https://api.openai.com/v1/completions', {
+            const userInput = document.getElementById('user-input');
+            const message = userInput.value.trim();
+            if (message) {
+                appendMessage('user-message', message);
+                userInput.value = '';
+                
+                // Gửi tin nhắn đến API ChatGPT và nhận phản hồi
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer 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`
+                        'Authorization': 'Bearer sk-None-6kVtBGzvfkngkvIxAd0pT3BlbkFJ96e7FEsL5ztBkxbuNXND'
                     },
                     body: JSON.stringify({
-                        model: "text-davinci-003",
-                        prompt: `Translate the following text to ${language}: ${userInput}`,
-                        max_tokens: 60
+                        model: "gpt-4",
+                        messages: [
+                            { role: "system", content: "Bạn là một cô gái dễ thương và vui vẻ, chuyên về các cuộc trò chuyện tình yêu." },
+                            { role: "user", content: message }
+                        ]
                     })
                 });
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Network response was not ok: ${response.statusText} - ${errorText}`);
-                }
-
                 const data = await response.json();
-                const botReply = data.choices[0].text.trim();
-                appendMessage('bot', botReply);
-                speak(botReply);
-            } catch (error) {
-                console.error('Error:', error);
-                appendMessage('bot', `Sorry, something went wrong: ${error.message}`);
+                const botMessage = data.choices[0].message.content;
+                appendMessage('bot-message', botMessage);
             }
         }
 
-        function appendMessage(sender, message) {
+        function appendMessage(className, message) {
             const chatBox = document.getElementById('chat-box');
             const messageElement = document.createElement('div');
-            messageElement.classList.add('message', sender);
-
-            const messageContent = document.createElement('div');
-            messageContent.classList.add('message-content');
-            messageContent.textContent = message;
-
-            messageElement.appendChild(messageContent);
+            messageElement.className = `message ${className}`;
+            messageElement.textContent = message;
             chatBox.appendChild(messageElement);
             chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function startVoiceRecognition() {
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'en-US';
-
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                document.getElementById('user-input').value = transcript;
-                sendMessage();
-            };
-
-            recognition.onerror = function(event) {
-                console.error('Voice recognition error', event);
-            };
-
-            recognition.start();
-        }
-
-        function speak(text) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            window.speechSynthesis.speak(utterance);
         }
     </script>
 </body>
 </html>
+
